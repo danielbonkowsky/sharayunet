@@ -19,6 +19,7 @@ primary_region = 'lax'
 [[mounts]]
   source = "data"
   destination = "/data"
+  processes = ["app"]
 
 [[vm]]
   memory = '1gb'
