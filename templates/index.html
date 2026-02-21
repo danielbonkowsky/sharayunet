@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Gallery{% endblock %}
+
+{% block content %}
+<section class="gallery-header">
+  <h1>Gallery</h1>
+</section>
+
+{% if photos %}
+  <div class="photo-grid">
+    {% for photo in photos %}
+      <a class="photo-card" href="{{ url_for('photo', photo_id=photo['id']) }}">
+        <div class="photo-card-img-wrap">
+          <img
+            src="{{ photo['cloudinary_url'] }}"
+            alt="{{ photo['caption'] or 'Photo' }}"
+            loading="lazy"
+          >
+        </div>
+        {% if photo['caption'] %}
+          <p class="photo-card-caption">{{ photo['caption'] }}</p>
+        {% endif %}
+      </a>
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="empty-state">No photos yet. Check back soon!</p>
+{% endif %}
+{% endblock %}

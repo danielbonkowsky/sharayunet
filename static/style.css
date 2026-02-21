@@ -1,0 +1,411 @@
+/* =========================================================
+   Base
+   ========================================================= */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f8f7f5;
+  --surface: #ffffff;
+  --border: #e5e2dd;
+  --text: #1a1814;
+  --text-muted: #7a756d;
+  --accent: #2a2520;
+  --accent-hover: #403830;
+  --danger: #c0392b;
+  --danger-hover: #a93226;
+  --radius: 8px;
+  --shadow: 0 1px 4px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+}
+
+html { font-size: 16px; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+a { color: inherit; text-decoration: none; }
+
+img { display: block; max-width: 100%; height: auto; }
+
+/* =========================================================
+   Header
+   ========================================================= */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--accent);
+  color: #fff;
+  padding: 0 1.5rem;
+  box-shadow: 0 1px 6px rgba(0,0,0,.25);
+}
+
+.header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.site-logo {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+  color: #fff;
+}
+
+.site-nav {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.site-nav a {
+  color: rgba(255,255,255,.8);
+  font-size: .9rem;
+  transition: color .15s;
+}
+
+.site-nav a:hover { color: #fff; }
+
+/* =========================================================
+   Main
+   ========================================================= */
+.site-main {
+  flex: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  width: 100%;
+}
+
+/* =========================================================
+   Flash messages
+   ========================================================= */
+.flash-container { margin-bottom: 1.5rem; }
+
+.flash {
+  background: #fff8e1;
+  border: 1px solid #ffe082;
+  border-radius: var(--radius);
+  padding: .75rem 1rem;
+  font-size: .9rem;
+  margin-bottom: .5rem;
+}
+
+/* =========================================================
+   Buttons
+   ========================================================= */
+.btn {
+  display: inline-block;
+  padding: .6rem 1.4rem;
+  border: none;
+  border-radius: var(--radius);
+  font-size: .9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+  text-align: center;
+}
+
+.btn:active { transform: scale(.97); }
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-primary:hover { background: var(--accent-hover); }
+
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+}
+
+.btn-danger:hover { background: var(--danger-hover); }
+
+/* =========================================================
+   Gallery grid
+   ========================================================= */
+.gallery-header {
+  margin-bottom: 1.5rem;
+}
+
+.gallery-header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.photo-grid {
+  columns: 3 280px;
+  gap: 1rem;
+}
+
+.photo-card {
+  display: block;
+  break-inside: avoid;
+  margin-bottom: 1rem;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  transition: transform .2s, box-shadow .2s;
+}
+
+.photo-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0,0,0,.12), 0 8px 24px rgba(0,0,0,.08);
+}
+
+.photo-card-img-wrap img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+.photo-card-caption {
+  padding: .6rem .8rem;
+  font-size: .85rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* =========================================================
+   Photo detail
+   ========================================================= */
+.photo-detail {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  margin-bottom: 2.5rem;
+}
+
+.photo-detail-img-wrap {
+  flex: 1 1 60%;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #000;
+  box-shadow: var(--shadow);
+}
+
+.photo-detail-img-wrap img {
+  width: 100%;
+  height: auto;
+  max-height: 70vh;
+  object-fit: contain;
+}
+
+.photo-detail-meta {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  padding-top: .25rem;
+}
+
+.photo-caption {
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+.photo-date {
+  font-size: .85rem;
+  color: var(--text-muted);
+}
+
+.delete-form { margin-top: auto; }
+
+/* =========================================================
+   Comments
+   ========================================================= */
+.comments-section { max-width: 640px; }
+
+.comments-section h2 {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.comment-count {
+  color: var(--text-muted);
+  font-weight: 400;
+  font-size: 1rem;
+}
+
+.comment-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.comment {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: .9rem 1rem;
+}
+
+.comment-author {
+  font-weight: 600;
+  font-size: .9rem;
+  margin-bottom: .25rem;
+}
+
+.comment-body {
+  font-size: .95rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.comment-date {
+  font-size: .78rem;
+  color: var(--text-muted);
+  margin-top: .4rem;
+}
+
+/* =========================================================
+   Comment form
+   ========================================================= */
+.comment-form-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.25rem 1.5rem;
+}
+
+.comment-form-wrap h3 {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: .65rem;
+}
+
+/* =========================================================
+   Shared form styles
+   ========================================================= */
+label {
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+input[type="text"],
+input[type="password"],
+input[type="file"],
+textarea {
+  width: 100%;
+  padding: .55rem .75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  font-size: .95rem;
+  font-family: inherit;
+  color: var(--text);
+  transition: border-color .15s;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+textarea { resize: vertical; }
+
+.optional { font-weight: 400; color: var(--text-muted); }
+
+/* =========================================================
+   Auth / Upload forms
+   ========================================================= */
+.auth-wrap,
+.upload-wrap {
+  max-width: 440px;
+}
+
+.auth-wrap h1,
+.upload-wrap h1 {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.auth-form,
+.upload-form {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  box-shadow: var(--shadow);
+}
+
+/* =========================================================
+   Empty / error states
+   ========================================================= */
+.empty-state {
+  color: var(--text-muted);
+  font-size: .95rem;
+  padding: 2rem 0;
+}
+
+.error-wrap {
+  text-align: center;
+  padding: 4rem 0;
+}
+
+.error-wrap h1 {
+  font-size: 4rem;
+  font-weight: 800;
+  margin-bottom: .5rem;
+}
+
+.error-wrap p {
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+}
+
+/* =========================================================
+   Footer
+   ========================================================= */
+.site-footer {
+  text-align: center;
+  padding: 1.25rem;
+  font-size: .8rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+}
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+@media (max-width: 680px) {
+  .photo-detail {
+    flex-direction: column;
+  }
+
+  .photo-grid {
+    columns: 2 160px;
+  }
+}
+
+@media (max-width: 400px) {
+  .photo-grid {
+    columns: 1;
+  }
+}

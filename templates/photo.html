@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}{{ photo['caption'] or 'Photo' }}{% endblock %}
+
+{% block content %}
+<div class="photo-detail">
+  <div class="photo-detail-img-wrap">
+    <img src="{{ photo['cloudinary_url'] }}" alt="{{ photo['caption'] or 'Photo' }}">
+  </div>
+
+  <div class="photo-detail-meta">
+    {% if photo['caption'] %}
+      <p class="photo-caption">{{ photo['caption'] }}</p>
+    {% endif %}
+    <p class="photo-date">{{ photo['created_at'][:10] }}</p>
+
+    {% if session.get('logged_in') %}
+      <form
+        class="delete-form"
+        method="post"
+        action="{{ url_for('delete_photo', photo_id=photo['id']) }}"
+        onsubmit="return confirm('Delete this photo and all its comments?')"
+      >
+        <button class="btn btn-danger" type="submit">Delete photo</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+
+<section class="comments-section">
+  <h2>Comments <span class="comment-count">({{ comments|length }})</span></h2>
+
+  {% if comments %}
+    <ul class="comment-list">
+      {% for c in comments %}
+        <li class="comment">
+          <p class="comment-author">{{ c['name'] }}</p>
+          <p class="comment-body">{{ c['body'] }}</p>
+          <p class="comment-date">{{ c['created_at'][:16].replace('T', ' ') }}</p>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="empty-state">No comments yet. Be the first!</p>
+  {% endif %}
+
+  <div class="comment-form-wrap">
+    <h3>Leave a comment</h3>
+    <form class="comment-form" method="post" action="{{ url_for('add_comment', photo_id=photo['id']) }}">
+      <label for="name">Name</label>
+      <input
+        id="name"
+        name="name"
+        type="text"
+        placeholder="Your name"
+        maxlength="80"
+        required
+      >
+
+      <label for="body">Comment</label>
+      <textarea
+        id="body"
+        name="body"
+        rows="4"
+        placeholder="Write something…"
+        maxlength="2000"
+        required
+      ></textarea>
+
+      <button class="btn btn-primary" type="submit">Post comment</button>
+    </form>
+  </div>
+</section>
+{% endblock %}
