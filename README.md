@@ -1,5 +1,5 @@
 # sharayunet
-Website should be running on [sharayunet.fly.dev](https://sharayunet.fly.dev/)
+Website should be running on [sharayu.net](https://sharayu.net/)
 ## Ways I might get charged money
 ### Cloudinary
 - Image hosting
