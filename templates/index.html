@@ -16,6 +16,9 @@
             alt="{{ photo['caption'] or 'Photo' }}"
             loading="lazy"
           >
+          {% if photo['image_count'] > 1 %}
+            <span class="multi-photo-badge">&#10697; {{ photo['image_count'] }}</span>
+          {% endif %}
         </div>
         {% if photo['caption'] %}
           <p class="photo-card-caption">{{ photo['caption'] }}</p>

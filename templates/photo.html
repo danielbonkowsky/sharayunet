@@ -4,7 +4,26 @@
 {% block content %}
 <div class="photo-detail">
   <div class="photo-detail-img-wrap">
-    <img src="{{ photo['cloudinary_url'] }}" alt="{{ photo['caption'] or 'Photo' }}">
+    {% if images|length > 1 %}
+      <div class="carousel">
+        <div class="carousel-track" data-current="0">
+          {% for img in images %}
+            <div class="carousel-slide">
+              <img src="{{ img['cloudinary_url'] }}" alt="{{ photo['caption'] or 'Photo' }}">
+            </div>
+          {% endfor %}
+        </div>
+        <button class="carousel-btn carousel-prev" onclick="moveCarousel(this, -1)" aria-label="Previous">&#8249;</button>
+        <button class="carousel-btn carousel-next" onclick="moveCarousel(this, 1)" aria-label="Next">&#8250;</button>
+        <div class="carousel-dots">
+          {% for img in images %}
+            <button class="carousel-dot {% if loop.first %}active{% endif %}" onclick="goToSlide(this, {{ loop.index0 }})"></button>
+          {% endfor %}
+        </div>
+      </div>
+    {% else %}
+      <img src="{{ images[0]['cloudinary_url'] }}" alt="{{ photo['caption'] or 'Photo' }}">
+    {% endif %}
   </div>
 
   <div class="photo-detail-meta">
@@ -70,4 +89,32 @@
     </form>
   </div>
 </section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function getCarousel(el) {
+  return el.closest('.carousel');
+}
+function moveCarousel(btn, direction) {
+  const carousel = getCarousel(btn);
+  const track = carousel.querySelector('.carousel-track');
+  const count = track.querySelectorAll('.carousel-slide').length;
+  let current = parseInt(track.dataset.current);
+  current = (current + direction + count) % count;
+  applySlide(carousel, track, current);
+}
+function goToSlide(dot, index) {
+  const carousel = getCarousel(dot);
+  const track = carousel.querySelector('.carousel-track');
+  applySlide(carousel, track, index);
+}
+function applySlide(carousel, track, index) {
+  track.dataset.current = index;
+  track.style.transform = 'translateX(-' + (index * 100) + '%)';
+  carousel.querySelectorAll('.carousel-dot').forEach(function(d, i) {
+    d.classList.toggle('active', i === index);
+  });
+}
+</script>
 {% endblock %}

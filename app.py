@@ -53,6 +53,24 @@ def init_db():
         db.commit()
 
 
+def migrate_post_images():
+    """Populate post_images for any existing photos that don't have entries yet."""
+    with app.app_context():
+        db = get_db()
+        orphans = db.execute(
+            """SELECT p.id, p.cloudinary_url, p.cloudinary_public_id
+               FROM photos p
+               LEFT JOIN post_images pi ON p.id = pi.photo_id
+               WHERE pi.id IS NULL"""
+        ).fetchall()
+        for p in orphans:
+            db.execute(
+                "INSERT INTO post_images (photo_id, cloudinary_url, cloudinary_public_id, display_order) VALUES (?, ?, ?, 0)",
+                (p["id"], p["cloudinary_url"], p["cloudinary_public_id"]),
+            )
+        db.commit()
+
+
 # ---------------------------------------------------------------------------
 # Auth
 # ---------------------------------------------------------------------------
@@ -75,7 +93,12 @@ def login_required(f):
 def index():
     db = get_db()
     photos = db.execute(
-        "SELECT id, cloudinary_url, caption, created_at FROM photos ORDER BY created_at DESC"
+        """SELECT p.id, p.cloudinary_url, p.caption, p.created_at,
+                  COUNT(pi.id) AS image_count
+           FROM photos p
+           LEFT JOIN post_images pi ON p.id = pi.photo_id
+           GROUP BY p.id
+           ORDER BY p.created_at DESC"""
     ).fetchall()
     return render_template("index.html", photos=photos)
 
@@ -86,11 +109,17 @@ def photo(photo_id):
     p = db.execute("SELECT * FROM photos WHERE id = ?", (photo_id,)).fetchone()
     if p is None:
         return render_template("404.html"), 404
+    images = db.execute(
+        "SELECT cloudinary_url FROM post_images WHERE photo_id = ? ORDER BY display_order ASC",
+        (photo_id,),
+    ).fetchall()
+    if not images:
+        images = [{"cloudinary_url": p["cloudinary_url"]}]
     comments = db.execute(
         "SELECT * FROM comments WHERE photo_id = ? ORDER BY created_at ASC",
         (photo_id,),
     ).fetchall()
-    return render_template("photo.html", photo=p, comments=comments)
+    return render_template("photo.html", photo=p, images=images, comments=comments)
 
 
 @app.route("/photo/<int:photo_id>/comment", methods=["POST"])
@@ -138,21 +167,27 @@ def logout():
 @login_required
 def upload():
     if request.method == "POST":
-        file = request.files.get("photo")
+        files = [f for f in request.files.getlist("photos") if f and f.filename != ""]
         caption = request.form.get("caption", "").strip()
-        if not file or file.filename == "":
-            flash("Please select a photo to upload.")
+        if not files:
+            flash("Please select at least one photo to upload.")
             return redirect(url_for("upload"))
-        result = cloudinary.uploader.upload(
-            file,
-            folder="sharayunet",
-            resource_type="image",
-        )
+        uploaded = []
+        for f in files:
+            result = cloudinary.uploader.upload(f, folder="sharayunet", resource_type="image")
+            uploaded.append((result["secure_url"], result["public_id"]))
         db = get_db()
-        db.execute(
+        first_url, first_public_id = uploaded[0]
+        cursor = db.execute(
             "INSERT INTO photos (cloudinary_url, cloudinary_public_id, caption) VALUES (?, ?, ?)",
-            (result["secure_url"], result["public_id"], caption or None),
+            (first_url, first_public_id, caption or None),
         )
+        photo_id = cursor.lastrowid
+        for i, (url, public_id) in enumerate(uploaded):
+            db.execute(
+                "INSERT INTO post_images (photo_id, cloudinary_url, cloudinary_public_id, display_order) VALUES (?, ?, ?, ?)",
+                (photo_id, url, public_id, i),
+            )
         db.commit()
         flash("Photo uploaded successfully!")
         return redirect(url_for("index"))
@@ -166,7 +201,14 @@ def delete_photo(photo_id):
     p = db.execute("SELECT * FROM photos WHERE id = ?", (photo_id,)).fetchone()
     if p is None:
         return render_template("404.html"), 404
-    cloudinary.uploader.destroy(p["cloudinary_public_id"])
+    imgs = db.execute(
+        "SELECT cloudinary_public_id FROM post_images WHERE photo_id = ?", (photo_id,)
+    ).fetchall()
+    if imgs:
+        for img in imgs:
+            cloudinary.uploader.destroy(img["cloudinary_public_id"])
+    else:
+        cloudinary.uploader.destroy(p["cloudinary_public_id"])
     db.execute("DELETE FROM photos WHERE id = ?", (photo_id,))
     db.commit()
     flash("Photo deleted.")
@@ -179,6 +221,7 @@ def delete_photo(photo_id):
 
 with app.app_context():
     init_db()
+    migrate_post_images()
 
 if __name__ == "__main__":
     app.run(debug=True)

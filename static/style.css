@@ -225,6 +225,100 @@ img { display: block; max-width: 100%; height: auto; }
 .delete-form { margin-top: auto; }
 
 /* =========================================================
+   Multi-photo badge (gallery)
+   ========================================================= */
+.photo-card-img-wrap {
+  position: relative;
+}
+
+.multi-photo-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  font-size: .75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.45rem;
+  border-radius: 4px;
+  pointer-events: none;
+  line-height: 1.4;
+}
+
+/* =========================================================
+   Carousel (photo detail)
+   ========================================================= */
+.carousel {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: #000;
+  line-height: 0;
+}
+
+.carousel-track {
+  display: flex;
+  transition: transform 0.3s ease;
+}
+
+.carousel-slide {
+  flex: 0 0 100%;
+  min-width: 100%;
+}
+
+.carousel-slide img {
+  width: 100%;
+  height: auto;
+  max-height: 70vh;
+  object-fit: contain;
+  display: block;
+}
+
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.45);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 2.2rem;
+  line-height: 1;
+  padding: 0.4rem 0.7rem;
+  border-radius: 4px;
+  transition: background .15s;
+  z-index: 2;
+}
+
+.carousel-btn:hover { background: rgba(0,0,0,0.72); }
+
+.carousel-prev { left: 0.5rem; }
+.carousel-next { right: 0.5rem; }
+
+.carousel-dots {
+  position: absolute;
+  bottom: 0.7rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.4rem;
+  z-index: 2;
+}
+
+.carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.45);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background .15s;
+}
+
+.carousel-dot.active { background: #fff; }
+
+/* =========================================================
    Comments
    ========================================================= */
 .comments-section { max-width: 640px; }
