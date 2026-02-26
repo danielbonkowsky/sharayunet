@@ -4,6 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Photos{% endblock %} — sharayunet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -12,10 +15,10 @@
       <a class="site-logo" href="{{ url_for('index') }}">sharayunet</a>
       <nav class="site-nav">
         {% if session.get('logged_in') %}
-          <a href="{{ url_for('upload') }}">Upload</a>
-          <a href="{{ url_for('logout') }}">Log out</a>
+          <a href="{{ url_for('upload') }}">upload</a>
+          <a href="{{ url_for('logout') }}">log out</a>
         {% else %}
-          <a href="{{ url_for('login') }}">Admin</a>
+          <a href="{{ url_for('login') }}">admin</a>
         {% endif %}
       </nav>
     </div>
@@ -38,6 +41,38 @@
   <footer class="site-footer">
     <p>&copy; {{ 2025 }} sharayunet</p>
   </footer>
+
   {% block scripts %}{% endblock %}
+
+  <script>
+    (function () {
+      const logo = document.querySelector('.site-logo');
+      if (!logo) return;
+      const final = logo.textContent.trim();
+      const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+      let frame = 0;
+      const totalFrames = final.length * 5;
+
+      function tick() {
+        const progress = frame / totalFrames;
+        logo.textContent = final
+          .split('')
+          .map(function (ch, i) {
+            if (i / final.length < progress) return ch;
+            if (ch === ' ') return ' ';
+            return chars[Math.floor(Math.random() * chars.length)];
+          })
+          .join('');
+        frame++;
+        if (frame <= totalFrames) {
+          requestAnimationFrame(tick);
+        } else {
+          logo.textContent = final;
+        }
+      }
+
+      requestAnimationFrame(tick);
+    })();
+  </script>
 </body>
 </html>
