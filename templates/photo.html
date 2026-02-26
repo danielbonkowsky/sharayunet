@@ -9,7 +9,13 @@
         <div class="carousel-track" data-current="0">
           {% for img in images %}
             <div class="carousel-slide">
-              <img src="{{ img['cloudinary_url'] }}" alt="{{ photo['caption'] or 'Photo' }}">
+              {% if img['media_type'] == 'video' %}
+                <video controls playsinline>
+                  <source src="{{ img['cloudinary_url'] }}">
+                </video>
+              {% else %}
+                <img src="{{ img['cloudinary_url'] }}" alt="{{ photo['caption'] or 'Photo' }}">
+              {% endif %}
             </div>
           {% endfor %}
         </div>
@@ -22,7 +28,13 @@
         </div>
       </div>
     {% else %}
-      <img src="{{ images[0]['cloudinary_url'] }}" alt="{{ photo['caption'] or 'Photo' }}">
+      {% if images[0]['media_type'] == 'video' %}
+        <video controls playsinline>
+          <source src="{{ images[0]['cloudinary_url'] }}">
+        </video>
+      {% else %}
+        <img src="{{ images[0]['cloudinary_url'] }}" alt="{{ photo['caption'] or 'Photo' }}">
+      {% endif %}
     {% endif %}
   </div>
 

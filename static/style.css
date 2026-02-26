@@ -178,7 +178,8 @@ img { display: block; max-width: 100%; height: auto; }
   opacity: .8;
 }
 
-.photo-card-img-wrap img {
+.photo-card-img-wrap img,
+.photo-card-img-wrap video {
   width: 100%;
   height: auto;
   display: block;
@@ -210,7 +211,8 @@ img { display: block; max-width: 100%; height: auto; }
   background: #e8e8e8;
 }
 
-.photo-detail-img-wrap img {
+.photo-detail-img-wrap img,
+.photo-detail-img-wrap video {
   width: 100%;
   height: auto;
   max-height: 80vh;
@@ -282,7 +284,8 @@ img { display: block; max-width: 100%; height: auto; }
   min-width: 100%;
 }
 
-.carousel-slide img {
+.carousel-slide img,
+.carousel-slide video {
   width: 100%;
   height: auto;
   max-height: 80vh;

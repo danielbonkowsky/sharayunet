@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS photos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     cloudinary_url TEXT NOT NULL,
     cloudinary_public_id TEXT NOT NULL,
+    media_type TEXT NOT NULL DEFAULT 'image',
     caption TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -11,6 +12,7 @@ CREATE TABLE IF NOT EXISTS post_images (
     photo_id INTEGER NOT NULL,
     cloudinary_url TEXT NOT NULL,
     cloudinary_public_id TEXT NOT NULL,
+    media_type TEXT NOT NULL DEFAULT 'image',
     display_order INTEGER NOT NULL DEFAULT 0,
     FOREIGN KEY (photo_id) REFERENCES photos(id) ON DELETE CASCADE
 );

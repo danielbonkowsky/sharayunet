@@ -53,6 +53,17 @@ def init_db():
         db.commit()
 
 
+def migrate_media_type():
+    """Add media_type column to photos and post_images if not present."""
+    with app.app_context():
+        db = get_db()
+        for table in ("photos", "post_images"):
+            cols = [r[1] for r in db.execute(f"PRAGMA table_info({table})").fetchall()]
+            if "media_type" not in cols:
+                db.execute(f"ALTER TABLE {table} ADD COLUMN media_type TEXT NOT NULL DEFAULT 'image'")
+        db.commit()
+
+
 def migrate_post_images():
     """Populate post_images for any existing photos that don't have entries yet."""
     with app.app_context():
@@ -69,6 +80,16 @@ def migrate_post_images():
                 (p["id"], p["cloudinary_url"], p["cloudinary_public_id"]),
             )
         db.commit()
+
+
+def detect_media_type(file):
+    ct = (file.content_type or "").lower()
+    if ct.startswith("video/"):
+        return "video"
+    ext = os.path.splitext(file.filename or "")[1].lower()
+    if ext in {".mp4", ".mov", ".avi", ".mkv", ".webm", ".m4v"}:
+        return "video"
+    return "image"
 
 
 # ---------------------------------------------------------------------------
@@ -93,7 +114,7 @@ def login_required(f):
 def index():
     db = get_db()
     photos = db.execute(
-        """SELECT p.id, p.cloudinary_url, p.caption, p.created_at,
+        """SELECT p.id, p.cloudinary_url, p.caption, p.created_at, p.media_type,
                   COUNT(pi.id) AS image_count
            FROM photos p
            LEFT JOIN post_images pi ON p.id = pi.photo_id
@@ -110,11 +131,11 @@ def photo(photo_id):
     if p is None:
         return render_template("404.html"), 404
     images = db.execute(
-        "SELECT cloudinary_url FROM post_images WHERE photo_id = ? ORDER BY display_order ASC",
+        "SELECT cloudinary_url, media_type FROM post_images WHERE photo_id = ? ORDER BY display_order ASC",
         (photo_id,),
     ).fetchall()
     if not images:
-        images = [{"cloudinary_url": p["cloudinary_url"]}]
+        images = [{"cloudinary_url": p["cloudinary_url"], "media_type": p["media_type"]}]
     comments = db.execute(
         "SELECT * FROM comments WHERE photo_id = ? ORDER BY created_at ASC",
         (photo_id,),
@@ -170,26 +191,27 @@ def upload():
         files = [f for f in request.files.getlist("photos") if f and f.filename != ""]
         caption = request.form.get("caption", "").strip()
         if not files:
-            flash("Please select at least one photo to upload.")
+            flash("Please select at least one file to upload.")
             return redirect(url_for("upload"))
         uploaded = []
         for f in files:
-            result = cloudinary.uploader.upload(f, folder="sharayunet", resource_type="image")
-            uploaded.append((result["secure_url"], result["public_id"]))
+            mtype = detect_media_type(f)
+            result = cloudinary.uploader.upload(f, folder="sharayunet", resource_type="auto")
+            uploaded.append((result["secure_url"], result["public_id"], mtype))
         db = get_db()
-        first_url, first_public_id = uploaded[0]
+        first_url, first_public_id, first_mtype = uploaded[0]
         cursor = db.execute(
-            "INSERT INTO photos (cloudinary_url, cloudinary_public_id, caption) VALUES (?, ?, ?)",
-            (first_url, first_public_id, caption or None),
+            "INSERT INTO photos (cloudinary_url, cloudinary_public_id, media_type, caption) VALUES (?, ?, ?, ?)",
+            (first_url, first_public_id, first_mtype, caption or None),
         )
         photo_id = cursor.lastrowid
-        for i, (url, public_id) in enumerate(uploaded):
+        for i, (url, public_id, mtype) in enumerate(uploaded):
             db.execute(
-                "INSERT INTO post_images (photo_id, cloudinary_url, cloudinary_public_id, display_order) VALUES (?, ?, ?, ?)",
-                (photo_id, url, public_id, i),
+                "INSERT INTO post_images (photo_id, cloudinary_url, cloudinary_public_id, media_type, display_order) VALUES (?, ?, ?, ?, ?)",
+                (photo_id, url, public_id, mtype, i),
             )
         db.commit()
-        flash("Photo uploaded successfully!")
+        flash("Uploaded successfully!")
         return redirect(url_for("index"))
     return render_template("upload.html")
 
@@ -202,16 +224,18 @@ def delete_photo(photo_id):
     if p is None:
         return render_template("404.html"), 404
     imgs = db.execute(
-        "SELECT cloudinary_public_id FROM post_images WHERE photo_id = ?", (photo_id,)
+        "SELECT cloudinary_public_id, media_type FROM post_images WHERE photo_id = ?", (photo_id,)
     ).fetchall()
     if imgs:
         for img in imgs:
-            cloudinary.uploader.destroy(img["cloudinary_public_id"])
+            rtype = "video" if img["media_type"] == "video" else "image"
+            cloudinary.uploader.destroy(img["cloudinary_public_id"], resource_type=rtype)
     else:
-        cloudinary.uploader.destroy(p["cloudinary_public_id"])
+        rtype = "video" if p["media_type"] == "video" else "image"
+        cloudinary.uploader.destroy(p["cloudinary_public_id"], resource_type=rtype)
     db.execute("DELETE FROM photos WHERE id = ?", (photo_id,))
     db.commit()
-    flash("Photo deleted.")
+    flash("Deleted.")
     return redirect(url_for("index"))
 
 
@@ -221,6 +245,7 @@ def delete_photo(photo_id):
 
 with app.app_context():
     init_db()
+    migrate_media_type()
     migrate_post_images()
 
 if __name__ == "__main__":

@@ -11,11 +11,17 @@
     {% for photo in photos %}
       <a class="photo-card" href="{{ url_for('photo', photo_id=photo['id']) }}">
         <div class="photo-card-img-wrap">
-          <img
-            src="{{ photo['cloudinary_url'] }}"
-            alt="{{ photo['caption'] or 'Photo' }}"
-            loading="lazy"
-          >
+          {% if photo['media_type'] == 'video' %}
+            <video autoplay muted loop playsinline preload="metadata">
+              <source src="{{ photo['cloudinary_url'] }}">
+            </video>
+          {% else %}
+            <img
+              src="{{ photo['cloudinary_url'] }}"
+              alt="{{ photo['caption'] or 'Photo' }}"
+              loading="lazy"
+            >
+          {% endif %}
           {% if photo['image_count'] > 1 %}
             <span class="multi-photo-badge">&#10697; {{ photo['image_count'] }}</span>
           {% endif %}

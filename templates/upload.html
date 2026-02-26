@@ -10,12 +10,12 @@
     action="{{ url_for('upload') }}"
     enctype="multipart/form-data"
   >
-    <label for="photos">Photos <span class="optional">(select one or more)</span></label>
+    <label for="photos">Photos & Videos <span class="optional">(select one or more)</span></label>
     <input
       id="photos"
       name="photos"
       type="file"
-      accept="image/*"
+      accept="image/*,video/*"
       multiple
       required
     >
