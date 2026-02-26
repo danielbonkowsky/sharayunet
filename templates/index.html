@@ -26,9 +26,10 @@
             <span class="multi-photo-badge">&#10697; {{ photo['image_count'] }}</span>
           {% endif %}
         </div>
-        {% if photo['caption'] %}
-          <p class="photo-card-caption">{{ photo['caption'] }}</p>
-        {% endif %}
+        <div class="photo-card-caption">
+          {% if photo['caption'] %}<span class="photo-card-caption-text">{{ photo['caption'] }}</span>{% endif %}
+          <span class="photo-card-date">{{ photo['created_at'][:10] }}</span>
+        </div>
       </a>
     {% endfor %}
   </div>
