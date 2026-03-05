@@ -1,6 +1,8 @@
 import os
 import sqlite3
+from datetime import datetime, timezone
 from functools import wraps
+from zoneinfo import ZoneInfo
 
 import cloudinary
 import cloudinary.uploader
@@ -13,6 +15,19 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.environ["SECRET_KEY"]
+
+EASTERN = ZoneInfo("America/New_York")
+
+@app.template_filter("to_eastern")
+def to_eastern(ts):
+    """Convert a SQLite UTC timestamp string to Eastern time, formatted nicely."""
+    if not ts:
+        return ""
+    # SQLite stores as 'YYYY-MM-DD HH:MM:SS' or 'YYYY-MM-DDTHH:MM:SS'
+    ts = ts.replace("T", " ")
+    dt = datetime.strptime(ts[:19], "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
+    eastern = dt.astimezone(EASTERN)
+    return eastern.strftime("%Y-%m-%d %H:%M")
 
 cloudinary.config(
     cloud_name=os.environ["CLOUDINARY_CLOUD_NAME"],

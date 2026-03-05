@@ -82,7 +82,7 @@
           <div class="comment-content">
             <p class="comment-author">{{ c['name'] }}</p>
             <p class="comment-body">{{ c['body'] }}</p>
-            <p class="comment-date">{{ c['created_at'][:16].replace('T', ' ') }}</p>
+            <p class="comment-date">{{ c['created_at'] | to_eastern }}</p>
             {{ comment_actions(c) }}
           </div>
           <button class="reply-toggle" onclick="toggleReply(this, {{ c['id'] }})">reply</button>
@@ -104,7 +104,7 @@
                   <div class="comment-content">
                     <p class="comment-author">{{ r['name'] }}</p>
                     <p class="comment-body">{{ r['body'] }}</p>
-                    <p class="comment-date">{{ r['created_at'][:16].replace('T', ' ') }}</p>
+                    <p class="comment-date">{{ r['created_at'] | to_eastern }}</p>
                     {{ comment_actions(r) }}
                   </div>
                   <button class="reply-toggle" onclick="toggleReply(this, {{ c['id'] }}, '@{{ r['name'] }} ')">reply</button>
