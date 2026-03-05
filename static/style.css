@@ -386,6 +386,10 @@ img { display: block; max-width: 100%; height: auto; }
   padding: .75rem .9rem;
 }
 
+.comment-content {
+  position: relative;
+}
+
 .comment-author {
   font-weight: 600;
   font-size: .78rem;
@@ -408,6 +412,60 @@ img { display: block; max-width: 100%; height: auto; }
   margin-top: .4rem;
   letter-spacing: .05em;
 }
+
+/* =========================================================
+   Comment like / heart badge
+   ========================================================= */
+.comment-actions {
+  position: absolute;
+  top: 50%;
+  right: .9rem;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  z-index: 1;
+}
+
+.heart-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #e05555;
+  font-size: 1.4rem;
+  line-height: 1;
+  user-select: none;
+}
+
+.heart-s {
+  position: absolute;
+  font-size: .55rem;
+  font-weight: 700;
+  color: #fff;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -52%);
+  letter-spacing: 0;
+  pointer-events: none;
+}
+
+.like-form { display: inline; }
+
+.like-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  font-size: .72rem;
+  cursor: pointer;
+  padding: 0;
+  letter-spacing: .04em;
+  transition: color .15s;
+}
+
+.like-btn:hover { color: #e05555; }
+.like-btn--active { color: #e05555; }
 
 /* =========================================================
    Reply button & form

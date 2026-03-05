@@ -1,6 +1,21 @@
 {% extends "base.html" %}
 {% block title %}{{ photo['caption'] or 'Photo' }}{% endblock %}
 
+{% macro comment_actions(c) %}
+  <div class="comment-actions">
+    {% if c['liked'] %}
+      <span class="heart-badge">&#9829;<span class="heart-s">S</span></span>
+    {% endif %}
+    {% if session.get('logged_in') %}
+      <form class="like-form" method="post" action="{{ url_for('like_comment', photo_id=photo['id'], comment_id=c['id']) }}">
+        <button class="like-btn {% if c['liked'] %}like-btn--active{% endif %}" type="submit">
+          {% if c['liked'] %}unlike{% else %}&#9829;{% endif %}
+        </button>
+      </form>
+    {% endif %}
+  </div>
+{% endmacro %}
+
 {% block content %}
 <div class="photo-detail">
   <div class="photo-detail-img-wrap">
@@ -64,9 +79,12 @@
     <ul class="comment-list">
       {% for c in comments %}
         <li class="comment">
-          <p class="comment-author">{{ c['name'] }}</p>
-          <p class="comment-body">{{ c['body'] }}</p>
-          <p class="comment-date">{{ c['created_at'][:16].replace('T', ' ') }}</p>
+          <div class="comment-content">
+            <p class="comment-author">{{ c['name'] }}</p>
+            <p class="comment-body">{{ c['body'] }}</p>
+            <p class="comment-date">{{ c['created_at'][:16].replace('T', ' ') }}</p>
+            {{ comment_actions(c) }}
+          </div>
           <button class="reply-toggle" onclick="toggleReply(this, {{ c['id'] }})">reply</button>
           <form class="reply-form" id="reply-form-{{ c['id'] }}" method="post" action="{{ url_for('add_comment', photo_id=photo['id']) }}">
             <input type="hidden" name="parent_id" value="{{ c['id'] }}">
@@ -83,9 +101,12 @@
             <ul class="reply-list">
               {% for r in c['replies'] %}
                 <li class="comment comment-reply">
-                  <p class="comment-author">{{ r['name'] }}</p>
-                  <p class="comment-body">{{ r['body'] }}</p>
-                  <p class="comment-date">{{ r['created_at'][:16].replace('T', ' ') }}</p>
+                  <div class="comment-content">
+                    <p class="comment-author">{{ r['name'] }}</p>
+                    <p class="comment-body">{{ r['body'] }}</p>
+                    <p class="comment-date">{{ r['created_at'][:16].replace('T', ' ') }}</p>
+                    {{ comment_actions(r) }}
+                  </div>
                   <button class="reply-toggle" onclick="toggleReply(this, {{ c['id'] }}, '@{{ r['name'] }} ')">reply</button>
                 </li>
               {% endfor %}

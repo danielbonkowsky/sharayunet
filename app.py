@@ -64,6 +64,16 @@ def migrate_media_type():
         db.commit()
 
 
+def migrate_comment_likes():
+    """Add liked column to comments if not present."""
+    with app.app_context():
+        db = get_db()
+        cols = [r[1] for r in db.execute("PRAGMA table_info(comments)").fetchall()]
+        if "liked" not in cols:
+            db.execute("ALTER TABLE comments ADD COLUMN liked INTEGER NOT NULL DEFAULT 0")
+        db.commit()
+
+
 def migrate_comment_replies():
     """Add parent_id column to comments if not present."""
     with app.app_context():
@@ -184,6 +194,18 @@ def add_comment(photo_id):
     return redirect(url_for("photo", photo_id=photo_id))
 
 
+@app.route("/photo/<int:photo_id>/comment/<int:comment_id>/like", methods=["POST"])
+@login_required
+def like_comment(photo_id, comment_id):
+    db = get_db()
+    c = db.execute("SELECT liked FROM comments WHERE id = ? AND photo_id = ?", (comment_id, photo_id)).fetchone()
+    if c is None:
+        return render_template("404.html"), 404
+    db.execute("UPDATE comments SET liked = ? WHERE id = ?", (0 if c["liked"] else 1, comment_id))
+    db.commit()
+    return redirect(url_for("photo", photo_id=photo_id))
+
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if session.get("logged_in"):
@@ -269,6 +291,7 @@ with app.app_context():
     init_db()
     migrate_media_type()
     migrate_post_images()
+    migrate_comment_likes()
     migrate_comment_replies()
 
 if __name__ == "__main__":
