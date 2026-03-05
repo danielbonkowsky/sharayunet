@@ -249,9 +249,18 @@ def upload():
     if request.method == "POST":
         files = [f for f in request.files.getlist("photos") if f and f.filename != ""]
         caption = request.form.get("caption", "").strip()
+        post_date = request.form.get("post_date", "").strip()
         if not files:
             flash("Please select at least one file to upload.")
             return redirect(url_for("upload"))
+        # Build timestamp: use provided date at noon UTC, or current time
+        if post_date:
+            try:
+                created_at = datetime.strptime(post_date, "%Y-%m-%d").replace(hour=12).strftime("%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                created_at = None
+        else:
+            created_at = None
         uploaded = []
         for f in files:
             mtype = detect_media_type(f)
@@ -259,10 +268,16 @@ def upload():
             uploaded.append((result["secure_url"], result["public_id"], mtype))
         db = get_db()
         first_url, first_public_id, first_mtype = uploaded[0]
-        cursor = db.execute(
-            "INSERT INTO photos (cloudinary_url, cloudinary_public_id, media_type, caption) VALUES (?, ?, ?, ?)",
-            (first_url, first_public_id, first_mtype, caption or None),
-        )
+        if created_at:
+            cursor = db.execute(
+                "INSERT INTO photos (cloudinary_url, cloudinary_public_id, media_type, caption, created_at) VALUES (?, ?, ?, ?, ?)",
+                (first_url, first_public_id, first_mtype, caption or None, created_at),
+            )
+        else:
+            cursor = db.execute(
+                "INSERT INTO photos (cloudinary_url, cloudinary_public_id, media_type, caption) VALUES (?, ?, ?, ?)",
+                (first_url, first_public_id, first_mtype, caption or None),
+            )
         photo_id = cursor.lastrowid
         for i, (url, public_id, mtype) in enumerate(uploaded):
             db.execute(
@@ -273,6 +288,23 @@ def upload():
         flash("Uploaded successfully!")
         return redirect(url_for("index"))
     return render_template("upload.html")
+
+
+@app.route("/photo/<int:photo_id>/edit-date", methods=["POST"])
+@login_required
+def edit_photo_date(photo_id):
+    db = get_db()
+    if db.execute("SELECT id FROM photos WHERE id = ?", (photo_id,)).fetchone() is None:
+        return render_template("404.html"), 404
+    post_date = request.form.get("post_date", "").strip()
+    try:
+        created_at = datetime.strptime(post_date, "%Y-%m-%d").replace(hour=12).strftime("%Y-%m-%d %H:%M:%S")
+    except ValueError:
+        flash("Invalid date.")
+        return redirect(url_for("photo", photo_id=photo_id))
+    db.execute("UPDATE photos SET created_at = ? WHERE id = ?", (created_at, photo_id))
+    db.commit()
+    return redirect(url_for("photo", photo_id=photo_id))
 
 
 @app.route("/delete/<int:photo_id>", methods=["POST"])
