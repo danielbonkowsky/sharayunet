@@ -67,6 +67,30 @@
           <p class="comment-author">{{ c['name'] }}</p>
           <p class="comment-body">{{ c['body'] }}</p>
           <p class="comment-date">{{ c['created_at'][:16].replace('T', ' ') }}</p>
+          <button class="reply-toggle" onclick="toggleReply(this, {{ c['id'] }})">reply</button>
+          <form class="reply-form" id="reply-form-{{ c['id'] }}" method="post" action="{{ url_for('add_comment', photo_id=photo['id']) }}">
+            <input type="hidden" name="parent_id" value="{{ c['id'] }}">
+            <label for="reply-name-{{ c['id'] }}">Name</label>
+            <input id="reply-name-{{ c['id'] }}" name="name" type="text" placeholder="Your name" maxlength="80" required>
+            <label for="reply-body-{{ c['id'] }}">Reply</label>
+            <textarea id="reply-body-{{ c['id'] }}" name="body" rows="3" placeholder="Write a reply…" maxlength="2000" required></textarea>
+            <div class="reply-form-actions">
+              <button class="btn btn-primary" type="submit">post reply</button>
+              <button class="btn" type="button" onclick="toggleReply(null, {{ c['id'] }})">cancel</button>
+            </div>
+          </form>
+          {% if c['replies'] %}
+            <ul class="reply-list">
+              {% for r in c['replies'] %}
+                <li class="comment comment-reply">
+                  <p class="comment-author">{{ r['name'] }}</p>
+                  <p class="comment-body">{{ r['body'] }}</p>
+                  <p class="comment-date">{{ r['created_at'][:16].replace('T', ' ') }}</p>
+                  <button class="reply-toggle" onclick="toggleReply(this, {{ c['id'] }}, '@{{ r['name'] }} ')">reply</button>
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
         </li>
       {% endfor %}
     </ul>
@@ -127,6 +151,25 @@ function applySlide(carousel, track, index) {
   carousel.querySelectorAll('.carousel-dot').forEach(function(d, i) {
     d.classList.toggle('active', i === index);
   });
+}
+
+function toggleReply(btn, commentId, prefill) {
+  var form = document.getElementById('reply-form-' + commentId);
+  var textarea = form.querySelector('textarea[name="body"]');
+  var isOpen = form.classList.contains('reply-form--open');
+  if (isOpen && !prefill) {
+    form.classList.remove('reply-form--open');
+    return;
+  }
+  form.classList.add('reply-form--open');
+  if (prefill) {
+    textarea.value = prefill;
+    textarea.focus();
+    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+  } else {
+    textarea.value = '';
+    form.querySelector('input[name="name"]').focus();
+  }
 }
 </script>
 {% endblock %}

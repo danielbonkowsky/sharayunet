@@ -410,6 +410,57 @@ img { display: block; max-width: 100%; height: auto; }
 }
 
 /* =========================================================
+   Reply button & form
+   ========================================================= */
+.reply-toggle {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  font-size: .68rem;
+  letter-spacing: .06em;
+  cursor: pointer;
+  padding: 0;
+  margin-top: .4rem;
+  text-transform: lowercase;
+  transition: color .15s;
+}
+
+.reply-toggle:hover { color: var(--text); }
+
+.reply-form {
+  display: none;
+  flex-direction: column;
+  gap: .5rem;
+  margin-top: .75rem;
+  padding: .75rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.reply-form--open { display: flex; }
+
+.reply-form-actions {
+  display: flex;
+  gap: .5rem;
+}
+
+.reply-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+  margin-top: .75rem;
+  padding-left: 1rem;
+  border-left: 2px solid var(--border);
+}
+
+.comment-reply {
+  background: var(--bg);
+}
+
+/* =========================================================
    Comment form
    ========================================================= */
 .comment-form-wrap {

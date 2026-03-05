@@ -64,6 +64,16 @@ def migrate_media_type():
         db.commit()
 
 
+def migrate_comment_replies():
+    """Add parent_id column to comments if not present."""
+    with app.app_context():
+        db = get_db()
+        cols = [r[1] for r in db.execute("PRAGMA table_info(comments)").fetchall()]
+        if "parent_id" not in cols:
+            db.execute("ALTER TABLE comments ADD COLUMN parent_id INTEGER REFERENCES comments(id) ON DELETE CASCADE")
+        db.commit()
+
+
 def migrate_post_images():
     """Populate post_images for any existing photos that don't have entries yet."""
     with app.app_context():
@@ -136,27 +146,39 @@ def photo(photo_id):
     ).fetchall()
     if not images:
         images = [{"cloudinary_url": p["cloudinary_url"], "media_type": p["media_type"]}]
-    comments = db.execute(
+    all_comments = db.execute(
         "SELECT * FROM comments WHERE photo_id = ? ORDER BY created_at ASC",
         (photo_id,),
     ).fetchall()
-    return render_template("photo.html", photo=p, images=images, comments=comments)
+    # Build nested structure: top-level comments with replies list
+    comment_map = {c["id"]: dict(c) | {"replies": []} for c in all_comments}
+    top_level = []
+    for c in all_comments:
+        if c["parent_id"] is None:
+            top_level.append(comment_map[c["id"]])
+        elif c["parent_id"] in comment_map:
+            comment_map[c["parent_id"]]["replies"].append(comment_map[c["id"]])
+    return render_template("photo.html", photo=p, images=images, comments=top_level)
 
 
 @app.route("/photo/<int:photo_id>/comment", methods=["POST"])
 def add_comment(photo_id):
     name = request.form.get("name", "").strip()
     body = request.form.get("body", "").strip()
+    parent_id = request.form.get("parent_id", "").strip() or None
     if not name or not body:
         flash("Both name and comment are required.")
         return redirect(url_for("photo", photo_id=photo_id))
     db = get_db()
-    # Make sure photo exists
     if db.execute("SELECT id FROM photos WHERE id = ?", (photo_id,)).fetchone() is None:
         return render_template("404.html"), 404
+    if parent_id is not None:
+        parent = db.execute("SELECT id FROM comments WHERE id = ? AND photo_id = ?", (parent_id, photo_id)).fetchone()
+        if parent is None:
+            parent_id = None
     db.execute(
-        "INSERT INTO comments (photo_id, name, body) VALUES (?, ?, ?)",
-        (photo_id, name, body),
+        "INSERT INTO comments (photo_id, parent_id, name, body) VALUES (?, ?, ?, ?)",
+        (photo_id, parent_id, name, body),
     )
     db.commit()
     return redirect(url_for("photo", photo_id=photo_id))
@@ -247,6 +269,7 @@ with app.app_context():
     init_db()
     migrate_media_type()
     migrate_post_images()
+    migrate_comment_replies()
 
 if __name__ == "__main__":
     app.run(debug=True)
